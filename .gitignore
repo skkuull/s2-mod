@@ -1,0 +1,8 @@
+.vs
+.vscode
+build*/*
+deps/*
+
+!deps/premake
+!deps/extra
+!deps/**/.git
