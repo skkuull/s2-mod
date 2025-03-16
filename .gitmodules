@@ -39,10 +39,10 @@
 	url = https://github.com/lua/lua.git
 [submodule "deps/imgui"]
 	path = deps/imgui
-	url = https://github.com/ocornut/imgui.git
+	url = https://github.com/alicealys/imgui.git
 [submodule "deps/curl"]
 	path = deps/curl
 	url = https://github.com/curl/curl.git
 [submodule "deps/discord-rpc"]
 	path = deps/discord-rpc
-	url = https://github.com/alicealys/discord-rpc
+	url = https://github.com/alicealys/discord-rpc.git
