@@ -70,15 +70,15 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "XLabs"
-            VALUE "FileDescription", "IW7-Mod"
+            VALUE "CompanyName", "Skkuull"
+            VALUE "FileDescription", "S2-Mod"
             VALUE "FileVersion", VERSION_FILE
-            VALUE "InternalName", "IW7-Mod"
-            VALUE "LegalCopyright", "Copyright (C) 2022 X Labs Project. All rights reserved."
+            VALUE "InternalName", "S2-Mod"
+            VALUE "LegalCopyright", "Copyright (C) 2022 skkuull. All rights reserved."
             VALUE "Licence", "GPLv3"
-            VALUE "Info", "https://github.com/Joelrau/iw7-mod/"
-            VALUE "OriginalFilename", "iw7-mod.exe"
-            VALUE "ProductName", "iw7-mod"
+            VALUE "Info", "https://github.com/skkuull/s2-mod/"
+            VALUE "OriginalFilename", "s2-mod.exe"
+            VALUE "ProductName", "s2-mod"
             VALUE "ProductVersion", VERSION_PRODUCT
         END
     END

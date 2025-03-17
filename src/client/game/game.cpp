@@ -2,8 +2,6 @@
 #include "game.hpp"
 #include "dvars.hpp"
 
-#include "component/console/console.hpp"
-
 #include <utils/flags.hpp>
 #include <utils/string.hpp>
 #include <utils/io.hpp>

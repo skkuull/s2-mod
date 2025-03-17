@@ -3,7 +3,6 @@
 #include "game/game.hpp"
 
 #include "hash.hpp"
-#include "component/console/console.hpp"
 
 #include <zlib.h>
 #include <utils/cryptography.hpp>
