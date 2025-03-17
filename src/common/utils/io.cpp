@@ -63,8 +63,8 @@ namespace utils::io
 
 			if (size > -1)
 			{
-				data->resize(static_cast<uint32_t>(size));
-				stream.read(const_cast<char*>(data->data()), size);
+				data->resize(static_cast<std::uint32_t>(size));
+				stream.read(data->data(), size);
 				stream.close();
 				return true;
 			}

@@ -4,7 +4,7 @@ enum class component_priority
 {
 	min = 0,
 	dvars,
-	steam_proxy,
+	uwp,
 	arxan,
 	updater,
 };

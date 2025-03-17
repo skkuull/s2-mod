@@ -1,12 +1,13 @@
 #include <std_include.hpp>
 #include "loader/loader.hpp"
+#include "launcher/launcher.hpp"
 #include "loader/component_loader.hpp"
 #include "game/game.hpp"
 
-#include "component/console/console.hpp"
-
 #include <utils/string.hpp>
 #include <utils/io.hpp>
+#include <utils/properties.hpp>
+#include <utils/flags.hpp>
 
 DECLSPEC_NORETURN void WINAPI exit_hook(const int code)
 {
@@ -20,14 +21,74 @@ DWORD_PTR WINAPI set_thread_affinity_mask(HANDLE hThread, DWORD_PTR dwThreadAffi
 	return SetThreadAffinityMask(hThread, dwThreadAffinityMask);
 }
 
-FARPROC load_binary(uint64_t* base_address)
+launcher::mode detect_mode_from_arguments()
 {
-	loader loader;
+	if (utils::flags::has_flag("dedicated"))
+	{
+		return launcher::mode::server;
+	}
+
+	if (utils::flags::has_flag("multiplayer"))
+	{
+		return launcher::mode::multiplayer;
+	}
+
+	if (utils::flags::has_flag("singleplayer"))
+	{
+		return launcher::mode::singleplayer;
+	}
+
+	return launcher::mode::none;
+}
+
+void apply_aslr_patch(std::string* data)
+{
+	// sp binary, mp binary
+	if (data->size() != 0xE46800 && data->size() != 0x12EFA00)
+	{
+		printf("%llu", data->size());
+		throw std::runtime_error("File size mismatch, bad game files");
+	}
+
+	auto* dos_header = reinterpret_cast<PIMAGE_DOS_HEADER>(&data->at(0));
+	auto* nt_headers = reinterpret_cast<PIMAGE_NT_HEADERS>(&data->at(dos_header->e_lfanew));
+	auto* optional_header = &nt_headers->OptionalHeader;
+
+	if (optional_header->DllCharacteristics & IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE)
+	{
+		optional_header->DllCharacteristics &= ~(IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE);
+	}
+}
+
+void get_aslr_patched_binary(std::string* binary, std::string* data)
+{
+	const auto patched_binary = (utils::properties::get_appdata_path() / "bin" / *binary).generic_string();
+
+	try
+	{
+		apply_aslr_patch(data);
+		if (!utils::io::file_exists(patched_binary) && !utils::io::write_file(patched_binary, *data, false))
+		{
+			throw std::runtime_error("Could not write file");
+		}
+	}
+	catch (const std::exception& e)
+	{
+		throw std::runtime_error(
+			utils::string::va("Could not create aslr patched binary for %s! %s",
+				binary->data(), e.what())
+		);
+	}
+
+	*binary = patched_binary;
+}
+
+FARPROC load_binary(const launcher::mode mode)
+{
 	utils::nt::library self;
 
-	loader.set_import_resolver([self](const std::string& library, const std::string& function) -> void*
+	loader::set_import_resolver([self](const std::string& library, const std::string& function) -> void*
 	{
-
 		if (function == "ExitProcess")
 		{
 			return exit_hook;
@@ -40,22 +101,37 @@ FARPROC load_binary(uint64_t* base_address)
 		return component_loader::load_import(library, function);
 	});
 
-	std::string binary = "s2_mp64_ship.exe";
+	std::string binary;
+	switch (mode)
+	{
+	case launcher::mode::server:
+	case launcher::mode::multiplayer:
+		binary = "s2_mp64_ship.exe";
+		break;
+	case launcher::mode::singleplayer:
+		binary = "s2_sp64_ship.exe";
+		break;
+	case launcher::mode::none:
+	default:
+		throw std::runtime_error("Invalid game mode!");
+	}
 
 	std::string data;
 	if (!utils::io::read_file(binary, &data))
 	{
 		throw std::runtime_error(utils::string::va(
-			"Failed to read game binary (%s)!\nPlease copy the iw7-mod.exe into your Call of Duty: WWII installation folder and run it from there.",
+			"Failed to read game binary (%s)!\nPlease copy the s2-mod.exe into your Call of Duty: WWII installation folder and run it from there.",
 			binary.data()));
 	}
 
-#ifdef INJECT_HOST_AS_LIB
-	return loader.load_library(binary, base_address);
-#else
-	*base_address = 0x140000000;
-	return loader.load(self, data); // not working
-#endif
+	get_aslr_patched_binary(&binary, &data);
+
+	const auto proc = loader::load_binary(binary);
+	auto* const peb = reinterpret_cast<PPEB>(__readgsqword(0x60));
+	peb->Reserved3[1] = proc.get_ptr();
+	static_assert(offsetof(PEB, Reserved3[1]) == 0x10);
+
+	return FARPROC(proc.get_ptr() + proc.get_relative_entry_point());
 }
 
 void remove_crash_file()
@@ -109,8 +185,7 @@ int main()
 	FARPROC entry_point;
 	enable_dpi_awareness();
 
-	// This requires admin privilege, but I suppose many
-	// people will start with admin rights if it crashes.
+	// This requires admin privilege
 	limit_parallel_dll_loading();
 
 	srand(uint32_t(time(nullptr)));
@@ -132,20 +207,19 @@ int main()
 		{
 			if (!component_loader::post_start()) return EXIT_FAILURE;
 
-			uint64_t base_address{};
-			entry_point = load_binary(&base_address);
+			auto mode = detect_mode_from_arguments();
+			if (mode == launcher::mode::none)
+			{
+				const launcher launcher;
+				mode = launcher.run();
+				if (mode == launcher::mode::none) return 0;
+			}
+
+			entry_point = load_binary(mode);
 			if (!entry_point)
 			{
 				throw std::runtime_error("Unable to load binary into memory");
 			}
-
-			if (base_address != 0x140000000)
-			{
-				throw std::runtime_error(utils::string::va(
-					"Base address was (%p) and not (%p)\nThis should not be possible!",
-					base_address, 0x140000000));
-			}
-			game::base_address = base_address;
 
 			if (!component_loader::post_load()) return EXIT_FAILURE;
 

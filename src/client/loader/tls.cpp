@@ -28,7 +28,13 @@ namespace tls
 			throw std::runtime_error("Failed to load TLS DLL");
 		}
 
-		return reinterpret_cast<PIMAGE_TLS_DIRECTORY>(tls_dll.get_ptr() + tls_dll.get_optional_header()
-			->DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].VirtualAddress);
+		const auto tls_dir_entry = tls_dll.get_optional_header()
+			->DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].VirtualAddress;
+		if (!tls_dir_entry)
+		{
+			throw std::runtime_error("TLS DLL is invalid");
+		}
+
+		return reinterpret_cast<PIMAGE_TLS_DIRECTORY>(tls_dll.get_ptr() + tls_dir_entry);
 	}
 }
