@@ -5,7 +5,6 @@ enum class component_priority
 	min = 0,
 	dvars,
 	uwp,
-	arxan,
 	updater,
 };
 

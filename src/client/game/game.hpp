@@ -1,12 +1,27 @@
 #pragma once
 
+#include "launcher/launcher.hpp"
 #include "structs.hpp"
 
-#define PROTOCOL 2
+#define SELECT_VALUE(sp, mp) (game::environment::is_sp() ? (sp) : (mp))
 
 namespace game
 {
 	extern uint64_t base_address;
+
+	namespace environment
+	{
+		launcher::mode get_mode();
+		launcher::mode get_real_mode();
+
+		bool is_sp();
+		bool is_mp();
+		bool is_dedi();
+
+		void set_mode(launcher::mode mode);
+
+		std::string get_string();
+	}
 
 	template <typename T>
 	class symbol

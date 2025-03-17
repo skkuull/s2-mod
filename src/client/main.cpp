@@ -179,8 +179,7 @@ void limit_parallel_dll_loading()
 
 int main()
 {
-	if (!game::environment::is_dedi())
-		ShowWindow(GetConsoleWindow(), SW_HIDE);
+	ShowWindow(GetConsoleWindow(), SW_HIDE);
 
 	FARPROC entry_point;
 	enable_dpi_awareness();
@@ -214,6 +213,8 @@ int main()
 				mode = launcher.run();
 				if (mode == launcher::mode::none) return 0;
 			}
+
+			game::environment::set_mode(mode);
 
 			entry_point = load_binary(mode);
 			if (!entry_point)
