@@ -8,6 +8,8 @@
 #define DW_MOTD               302
 #define DW_PLAYLISTS          303
 
-#define TLS_DLL               304
+#define MENU_MAIN             304
 
-#define ICON_IMAGE            305
+#define TLS_DLL               305
+
+#define ICON_IMAGE            306
