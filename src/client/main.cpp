@@ -33,6 +33,11 @@ launcher::mode detect_mode_from_arguments()
 		return launcher::mode::multiplayer;
 	}
 
+	if (utils::flags::has_flag("zombies"))
+	{
+		return launcher::mode::zombies;
+	}
+
 	if (utils::flags::has_flag("singleplayer"))
 	{
 		return launcher::mode::singleplayer;
@@ -106,6 +111,7 @@ FARPROC load_binary(const launcher::mode mode)
 	{
 	case launcher::mode::server:
 	case launcher::mode::multiplayer:
+	case launcher::mode::zombies:
 		binary = "s2_mp64_ship.exe";
 		break;
 	case launcher::mode::singleplayer:
