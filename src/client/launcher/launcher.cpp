@@ -3,6 +3,8 @@
 
 #include <utils/nt.hpp>
 
+#include <version.hpp>
+
 launcher::launcher()
 {
 	this->create_main_menu();
@@ -43,7 +45,7 @@ void launcher::create_main_menu()
 			return DefWindowProcA(*window, message, w_param, l_param);
 		});
 
-	this->main_window_.create("S2-Mod", 750, 420);
+	this->main_window_.create("S2-Mod: " VERSION, 750, 350);
 	this->main_window_.load_html(load_content(MENU_MAIN));
 	this->main_window_.show();
 }
