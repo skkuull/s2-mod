@@ -1,6 +1,7 @@
-# S2-Mod
+# <img src="assets/github/icon-256x256.png" width="50px" height="50px"> S2-Mod
 
 NOTE: This is a wip modification of S2(WWII)
+<br>
 NOTE: You must legally own Call of Duty®: WWII to run this mod. Cracked/Pirated versions of the game are **NOT** supported.
 
 ## Disclaimer
