@@ -9,6 +9,8 @@ namespace game
 {
 	extern uint64_t base_address;
 
+	void Cbuf_AddText(int localClientNum, const char* text);
+
 	namespace environment
 	{
 		launcher::mode get_mode();
@@ -51,10 +53,11 @@ namespace game
 		T* address_;
 	};
 
-	namespace environment
-	{
-		bool is_dedi();
-	}
+	int Cmd_Argc();
+	const char* Cmd_Argv(int index);
+
+	int SV_Cmd_Argc();
+	const char* SV_Cmd_Argv(int index);
 }
 
 size_t reverse_b(const size_t ptr);

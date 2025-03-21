@@ -31,4 +31,11 @@ namespace game
 		E_GAMEUSER_MAX_USERS_ADDED = 0x89245100,
 		E_GAMEUSER_SIGNED_OUT = 0x89245101,
 	};
+
+	struct cmd_text 
+	{
+		byte* data;
+		int maxsize;
+		int cmdsize;
+	};
 }
