@@ -10,6 +10,8 @@
 
 #define MENU_MAIN             304
 
-#define TLS_DLL               305
+#define DVAR_LIST             305
 
-#define ICON_IMAGE            306
+#define TLS_DLL               306
+
+#define ICON_IMAGE            307

@@ -10,6 +10,7 @@ namespace game
 	extern uint64_t base_address;
 
 	void Cbuf_AddText(int localClientNum, const char* text);
+	void command_execute(int localClientNum, std::string text);
 
 	namespace environment
 	{

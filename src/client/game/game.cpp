@@ -5,28 +5,53 @@
 #include <utils/flags.hpp>
 #include <utils/string.hpp>
 #include <utils/io.hpp>
+#include <utils/nt.hpp>
+#include <utils/json.hpp>
 
 namespace game
 {
-	uint64_t base_address;
+	uint64_t base_address = (uint64_t)GetModuleHandleA(0);;
 
-	cmd_text* cmd_textArray = (cmd_text*)0x14BD83728;
+	auto* const cmd_textArray = reinterpret_cast<cmd_text*>(0x14BD83728);
 
 	void Cbuf_AddText(int localClientNum, const char* text)
 	{
 		Sys_EnterCriticalSection(193);
 
-		cmd_text* cmd_text_array = &cmd_textArray[localClientNum];
+		auto* cmd_texts = &cmd_textArray[localClientNum];
+		auto text_length = static_cast<int>(strlen(text));
 
-		int v4 = strlen(text);
-		int v5 = cmd_text_array->cmdsize;
-		if ((int)v5 + v4 < cmd_text_array->maxsize)
+		if (cmd_texts->cmdsize + text_length < cmd_texts->maxsize)
 		{
-			memcpy(&cmd_text_array->data[v5], text, v4 + 1);
-			cmd_text_array->cmdsize += v4;
+			memcpy(&cmd_texts->data[cmd_texts->cmdsize], text, text_length + 1);
+			cmd_texts->cmdsize += text_length;
 		}
 
 		Sys_LeaveCriticalSection(193);
+	}
+
+	const auto list_json = utils::nt::load_resource(DVAR_LIST);
+	const auto list = nlohmann::json::parse(list_json);
+
+	void command_execute(int localClientNum, std::string text)
+	{
+		if (!list.is_array()) return;
+
+		for (const auto& dvar_info : list)
+		{
+			if (dvar_info.is_array() && dvar_info.size() == 2)
+			{
+				const auto name = dvar_info[1].get<std::string>();    // name
+				const auto dvar_id = dvar_info[0].get<std::string>(); // id
+
+				if (!name.empty() && !dvar_id.empty())
+				{
+					text = utils::string::replace(utils::string::to_lower(text), name, dvar_id);
+				}
+			}
+		}
+
+		Cbuf_AddText(localClientNum, utils::string::va("%s \n", text.data()));
 	}
 
 	int Cmd_Argc()
