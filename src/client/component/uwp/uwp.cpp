@@ -13,6 +13,7 @@ namespace uwp
 		utils::hook::invoke<HRESULT>(SELECT_VALUE(0x14063E0A4, 0x14088ECEC), async, license);
 		license->isActive = true;
 		license->isTrial = false;
+		license->isDiscLicense = false;
 
 		return S_OK;
 	}
@@ -22,6 +23,11 @@ namespace uwp
 	public:
 		void post_load() override
 		{
+			// Fix network crashes
+			utils::hook::nop(0x140A2B529, 4);
+			utils::hook::nop(0x140A2B87C, 5);
+			utils::hook::nop(0x140A2BF6D, 2);
+
 			// Patch licnese check
 			utils::hook::call(SELECT_VALUE(0x140037BF2, 0x14017D362), XStoreQueryGameLicenseResult);
 		}
